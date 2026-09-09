@@ -224,3 +224,14 @@ function ifs_erp_render_master_workspace() {
     </script>
     <?php
 }
+
+add_filter('login_redirect', 'ifs_erp_custom_admin_login_redirect', 10, 3);
+function ifs_erp_custom_admin_login_redirect($redirect_to, $request, $user) {
+    // চেক করুন ইউজার সফলভাবে লগইন করেছেন কিনা এবং তার রোল অ্যাডমিন বা এজাতীয় কিছু কিনা
+    if (isset($user->roles) && is_array($user->roles)) {
+        if (in_array('administrator', $user->roles) || in_array('editor', $user->roles)) {
+            return admin_url('admin.php?page=ifs-attendance&page_view=dashboard');
+        }
+    }
+    return $redirect_to;
+}
