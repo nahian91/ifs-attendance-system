@@ -184,9 +184,7 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
         <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px;">
             <div class="ifs-login-box" style="width: 100%; max-width: 420px; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 18px; padding: 36px; box-shadow: 0 4px 25px -4px rgba(0, 0, 0, 0.05); font-family: 'Plus Jakarta Sans', sans-serif;">
                 <div style="text-align: center; margin-bottom: 22px;">
-                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #0284c7, #2563eb); border-radius: 14px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                    </div>
+                    <img src="https://attendance.infinityflamesoft.com/wp-content/uploads/2026/09/logo.png" alt="Logo" style="height: 25px; border-radius: 10px; object-fit: cover;">
                     <h3 style="margin: 0; font-size: 1.35rem; color: #0f172a; font-weight: 800;"><?php echo esc_html($portal_name); ?></h3>
                     <p style="margin: 4px 0 0; color: #64748b; font-size: 0.82rem;">Student & Parent Access Portal</p>
                 </div>
