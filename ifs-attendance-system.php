@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name: IFS Academic ERP & Frontend Portal (Modular Enterprise Pro)
+ * Plugin Name: IFS Academy Management System
  * Plugin URI: https://example.com/
- * Description: 10/10 Enterprise Modular ERP with Split Files, Media Library Uploader, Admission Fee Reminders, Day-wise Batch Routine & Frontend Portal. Shortcode: [attendance_portal]
- * Version: 16.5.0
- * Author: IFS Engineering Team
+ * Description: 10/10 Enterprise Modular ERP with Ultra-Smooth Scrollbars, Split Files, Media Library Uploader, Admission Fee Reminders, Day-wise Batch Routine & Frontend Portal. Shortcode: [attendance_portal]
+ * Version: 1.0
+ * Author: Abdullah Nahian
  * Text Domain: ifs-attendance
  */
 
@@ -12,8 +12,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// গ্লোবাল কনস্ট্যান্ট ডিফাইন
-define('IFS_VERSION', '16.5.0');
+// গ্লোবাল কনস্ট্যান্ট
+define('IFS_VERSION', '1.0');
 define('IFS_PLUGIN_FILE', __FILE__);
 define('IFS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('IFS_INC_DIR', IFS_PLUGIN_DIR . 'inc/');
@@ -26,7 +26,7 @@ function ifs_erp_init_session() {
     }
 }
 
-// ইনক্লুড ফোল্ডার থেকে আলাদা ফাইলগুলো লোড করা
+// ইনক্লুড ফোল্ডার থেকে ফাইলগুলো লোড করা
 require_once IFS_INC_DIR . 'db.php';
 require_once IFS_INC_DIR . 'assets.php';
 require_once IFS_INC_DIR . 'ajax-actions.php';
@@ -46,8 +46,8 @@ require_once IFS_INC_DIR . 'frontend-portal.php';
 add_action('admin_menu', 'ifs_erp_register_workspace_menu');
 function ifs_erp_register_workspace_menu() {
     add_menu_page(
-        'IFS ERP', 
-        'IFS ERP', 
+        'IFS Academy', 
+        'IFS Academy', 
         'manage_options', 
         'ifs-attendance', 
         'ifs_erp_render_master_workspace', 
@@ -56,7 +56,7 @@ function ifs_erp_register_workspace_menu() {
     );
 }
 
-// মাস্টার ওয়ার্কস্পেস ফাংশন (ট্যাব অনুযায়ী সঠিক ফাইল ও ভিউ কল করবে)
+// মাস্টার ওয়ার্কস্পেস ফাংশন
 function ifs_erp_render_master_workspace() {
     global $wpdb;
     ifs_pro_inject_ultimate_styles();
@@ -80,22 +80,23 @@ function ifs_erp_render_master_workspace() {
     $teachers_map      = $wpdb->get_results("SELECT id, name FROM $table_teachers ORDER BY name ASC", OBJECT_K);
 
     $currency_symbol = get_option('ifs_currency_symbol', '৳');
-    $portal_name     = get_option('ifs_portal_name', 'IFS Academic ERP');
+    $portal_name     = get_option('ifs_portal_name', 'IFS Academy');
     $total_students_all = (int) $wpdb->get_var("SELECT COUNT(*) FROM $table_students WHERE status = 'active'");
     $today              = date('Y-m-d');
     ?>
 
     <div class="ifs-shell">
         <aside class="ifs-sidebar">
-            <div class="ifs-sidebar-brand">
-                <div class="ifs-brand-icon"><?php echo ifs_get_icon('dashboard'); ?></div>
-                <div>
-                    <div class="ifs-brand-name"><?php echo esc_html($portal_name); ?></div>
-                    <span class="ifs-brand-sub">Enterprise Edition</span>
-                </div>
-            </div>
+           <div class="ifs-sidebar-brand">
+    <div class="ifs-brand-icon" style="padding: 0; background: transparent; box-shadow: none; display: flex; align-items: center; justify-content: center;">
+        <img src="https://attendance.infinityflamesoft.com/wp-content/uploads/2026/09/logo.png" alt="Logo" style="height: 25px; border-radius: 10px; object-fit: cover;">
+    </div>
+    <div>
+        <div class="ifs-brand-name"><?php echo esc_html($portal_name); ?></div>
+    </div>
+</div>
 
-            <nav class="ifs-menu-col">
+            <nav class="ifs-menu-col ifs-custom-scrollbar">
                 <div class="ifs-menu-heading">Overview</div>
                 <a href="<?php echo esc_url($base_url . '&page_view=dashboard'); ?>" class="ifs-menu-item <?php echo ($page_view === 'dashboard') ? 'active' : ''; ?>">
                     <div class="ifs-menu-item-left"><?php echo ifs_get_icon('dashboard'); ?><span>Dashboard</span></div>
@@ -134,7 +135,10 @@ function ifs_erp_render_master_workspace() {
             </nav>
 
             <div class="ifs-sidebar-footer">
-                <a href="<?php echo esc_url(admin_url('index.php')); ?>" class="ifs-sidebar-link">Exit to WP</a>
+                <a href="<?php echo esc_url(wp_logout_url(admin_url())); ?>" class="ifs-sidebar-link">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    <span>Logout</span>
+                </a>
             </div>
         </aside>
 
@@ -160,7 +164,10 @@ function ifs_erp_render_master_workspace() {
                     }
                 } elseif ($page_view === 'students' || $page_view === 'profile') {
                     if ($page_view === 'profile') {
-                        include IFS_INC_DIR . 'students.php'; // স্টুডেন্ট প্রোফাইল রেন্ডার হ্যান্ডলার
+                        if (function_exists('ifs_erp_render_student_profile_view')) {
+                            $student_id = intval($_GET['student_id'] ?? 0);
+                            ifs_erp_render_student_profile_view($wpdb, $student_id, $table_students, $table_attendance, $table_fees, $currency_symbol, $base_url);
+                        }
                     } else {
                         if (function_exists('ifs_erp_render_students_workspace')) {
                             ifs_erp_render_students_workspace($wpdb, $table_students, $available_batches, $available_insts, $sub_tab, $base_url, $currency_symbol);
