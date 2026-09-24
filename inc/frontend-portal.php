@@ -1,7 +1,9 @@
 <?php
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
-// ১. থিম ওভাররাইডার: শর্টকোড যুক্ত পেজে থিমের সমস্ত হেডার/ফুটার/HTML বাইপাস করে সরাসরি ফুলস্ক্রিন লোড করা
+// 1. Theme Override: Fullscreen bypass for pages containing shortcode
 add_action('template_redirect', 'ifs_erp_takeover_theme_template');
 function ifs_erp_takeover_theme_template() {
     if (is_singular() && !is_admin()) {
@@ -13,7 +15,7 @@ function ifs_erp_takeover_theme_template() {
     }
 }
 
-// ২. শর্টকোড ফলব্যাক
+// 2. Shortcode Fallback
 add_shortcode('attendance_portal', 'ifs_erp_frontend_master_portal');
 function ifs_erp_frontend_master_portal() {
     ob_start();
@@ -21,9 +23,13 @@ function ifs_erp_frontend_master_portal() {
     return ob_get_clean();
 }
 
-// ৩. থিম-মুক্ত স্বতন্ত্র মোবাইল-ফার্স্ট ফ্রন্টএন্ড পোর্টাল
+// 3. Mobile-First Standalone Frontend Portal
 function ifs_erp_render_standalone_frontend_portal($standalone = true) {
     global $wpdb;
+
+    if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+        session_start();
+    }
 
     $is_authenticated = !empty($_SESSION['ifs_student_auth']);
     $currency_symbol  = get_option('ifs_currency_symbol', '৳');
@@ -37,7 +43,11 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
             <meta charset="<?php bloginfo('charset'); ?>">
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
             <title><?php echo esc_html($portal_name); ?> - Student Portal</title>
-            <?php ifs_pro_inject_ultimate_styles(); ?>
+            <?php 
+            if (function_exists('ifs_pro_inject_ultimate_styles')) {
+                ifs_pro_inject_ultimate_styles(); 
+            }
+            ?>
             <style>
                 html, body {
                     margin: 0 !important;
@@ -61,11 +71,11 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
         <div class="ifs-theme-neutralizer">
         <?php
     } else {
-        ifs_pro_inject_ultimate_styles();
+        if (function_exists('ifs_pro_inject_ultimate_styles')) {
+            ifs_pro_inject_ultimate_styles();
+        }
         echo '<div class="ifs-fullscreen-wrapper">';
     }
-
-    // মোবাইল রেসপন্সিভ স্টাইলিং
     ?>
     <style>
         .ifs-portal-container {
@@ -114,7 +124,7 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
             border-radius: 12px;
         }
 
-        /* মোবাইল স্ক্রিন অপ্টিমাইজেশন (Max 768px) */
+        /* Mobile Screen Optimizations (Max 768px) */
         @media (max-width: 768px) {
             .ifs-portal-container {
                 padding: 14px 12px;
@@ -174,7 +184,7 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
     </style>
     <?php
 
-    // ৪. অথেনটিকেশন চেক
+    // 4. Authentication Check
     if (!$is_authenticated):
         $num1 = wp_rand(1, 9);
         $num2 = wp_rand(1, 9);
@@ -195,7 +205,7 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
                     <div class="ifs-alert ifs-alert-error" style="font-size:0.82rem; padding: 10px 14px; margin-bottom: 16px;">✕ Math verification failed.</div>
                 <?php endif; ?>
 
-                <form method="POST">
+                <form method="POST" action="<?php echo esc_url(remove_query_arg(['ifs_err'])); ?>">
                     <?php wp_nonce_field('ifs_front_login_nonce'); ?>
                     <input type="hidden" name="ifs_frontend_login" value="1">
                     
@@ -232,32 +242,39 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
         return;
     endif;
 
-    // ৫. লগইন স্টেট: ফুলস্ক্রিন মোবাইল-ফ্রেন্ডলি ড্যাশবোর্ড
-    $auth = $_SESSION['ifs_student_auth'];
+    // 5. Authenticated Student Dashboard
+    $auth       = $_SESSION['ifs_student_auth'];
     $student_id = intval($auth['id']);
-    $student = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ifs_students WHERE id = %d", $student_id));
+    $student    = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ifs_students WHERE id = %d", $student_id));
+
+    if (!$student) {
+        unset($_SESSION['ifs_student_auth']);
+        wp_safe_redirect(remove_query_arg(['ifs_front_logout']));
+        exit;
+    }
 
     $total_classes = (int) $wpdb->get_var("SELECT COUNT(DISTINCT attendance_date) FROM {$wpdb->prefix}ifs_attendance");
-    $att_stats = $wpdb->get_results($wpdb->prepare("SELECT status, COUNT(*) as cnt FROM {$wpdb->prefix}ifs_attendance WHERE student_id = %d GROUP BY status", $student_id), OBJECT_K);
-    $p_cnt = isset($att_stats['Present']) ? (int)$att_stats['Present']->cnt : 0;
-    $a_cnt = isset($att_stats['Absent']) ? (int)$att_stats['Absent']->cnt : 0;
-    $l_cnt = isset($att_stats['Late']) ? (int)$att_stats['Late']->cnt : 0;
-    $presence_pct = ($total_classes > 0) ? round(($p_cnt / $total_classes) * 100, 1) : 0;
+    $att_stats     = $wpdb->get_results($wpdb->prepare("SELECT status, COUNT(*) as cnt FROM {$wpdb->prefix}ifs_attendance WHERE student_id = %d GROUP BY status", $student_id), OBJECT_K);
+    $p_cnt         = isset($att_stats['Present']) ? (int)$att_stats['Present']->cnt : 0;
+    $a_cnt         = isset($att_stats['Absent']) ? (int)$att_stats['Absent']->cnt : 0;
+    $l_cnt         = isset($att_stats['Late']) ? (int)$att_stats['Late']->cnt : 0;
+    $presence_pct  = ($total_classes > 0) ? round(($p_cnt / $total_classes) * 100, 1) : 0;
 
-    $total_paid = (float) $wpdb->get_var($wpdb->prepare("SELECT SUM(paid_amount) FROM {$wpdb->prefix}ifs_fees WHERE student_id = %d", $student_id));
-    $fee_history = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ifs_fees WHERE student_id = %d ORDER BY payment_date DESC, id DESC", $student_id));
-    $recent_att = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ifs_attendance WHERE student_id = %d ORDER BY attendance_date DESC LIMIT 15", $student_id));
+    $total_paid    = (float) $wpdb->get_var($wpdb->prepare("SELECT SUM(paid_amount) FROM {$wpdb->prefix}ifs_fees WHERE student_id = %d", $student_id));
+    $fee_history   = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ifs_fees WHERE student_id = %d ORDER BY payment_date DESC, id DESC", $student_id));
+    $recent_att    = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ifs_attendance WHERE student_id = %d ORDER BY attendance_date DESC LIMIT 15", $student_id));
 
-    $batch_info = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ifs_batches WHERE batch_name = %s", $student->batch));
+    $batch_info    = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ifs_batches WHERE batch_name = %s", $student->batch));
     $schedule_data = json_decode($batch_info->schedule_json ?? '', true) ?: [];
-    $notices = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ifs_notices WHERE target_batch = 'All' OR target_batch = %s ORDER BY id DESC LIMIT 6", $student->batch));
+    $notices       = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ifs_notices WHERE target_batch = 'All' OR target_batch = %s ORDER BY id DESC LIMIT 6", $student->batch));
     ?>
 
     <div class="ifs-portal-container">
-        <!-- টপ হেডার বার -->
+        <!-- Top Header -->
         <div class="ifs-portal-header">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <div><img src="https://attendance.infinityflamesoft.com/wp-content/uploads/2026/09/logo.png" alt="Logo" style="height: 25px; border-radius: 10px; object-fit: cover;">
+                <img src="https://attendance.infinityflamesoft.com/wp-content/uploads/2026/09/logo.png" alt="Logo" style="height: 25px; border-radius: 10px; object-fit: cover;">
+                <div>
                     <h3 style="margin: 0; font-size: 1.1rem; color: #0f172a; font-weight: 800; line-height: 1.2;"><?php echo esc_html($portal_name); ?></h3>
                     <span style="font-size: 0.7rem; color: #64748b; font-weight: 600;">Student Workspace</span>
                 </div>
@@ -272,10 +289,10 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
             </div>
         </div>
 
-        <!-- রেসপন্সিভ প্রোফাইল ব্যানার কার্ড -->
+        <!-- Student Profile Banner -->
         <div class="ifs-banner-card">
             <div class="ifs-banner-avatar-group">
-                <img src="<?php echo esc_url($student->photo_url ?: 'https://via.placeholder.com/150'); ?>" style="width:78px; height:78px; border-radius:50%; object-fit:cover; border:3px solid #0284c7; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15); flex-shrink: 0;">
+                <img src="<?php echo esc_url($student->photo_url ?: 'https://via.placeholder.com/150'); ?>" alt="Student Photo" style="width:78px; height:78px; border-radius:50%; object-fit:cover; border:3px solid #0284c7; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15); flex-shrink: 0;">
                 <div style="flex-grow:1;">
                     <h2 style="margin:0 0 4px; font-size:1.45rem; color:#0f172a; font-weight:800; line-height: 1.2;"><?php echo esc_html($student->name); ?></h2>
                     <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top: 6px;">
@@ -293,7 +310,7 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
             </div>
         </div>
 
-        <!-- কেপিআই কার্ড গ্রিড -->
+        <!-- Student KPI Row -->
         <div class="ifs-kpi-grid">
             <div class="ifs-kpi-tile kpi-green">
                 <span class="ifs-kpi-meta">Attendance Record</span>
@@ -307,12 +324,12 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
             </div>
             <div class="ifs-kpi-tile kpi-red">
                 <span class="ifs-kpi-meta">Admission Balance Due</span>
-                <div class="ifs-kpi-number" style="color:#ef4444;"><?php echo esc_html($currency_symbol) . ' ' . esc_html(number_format($student->admission_due, 2)); ?></div>
+                <div class="ifs-kpi-number" style="color:#ef4444;"><?php echo esc_html($currency_symbol) . ' ' . esc_html(number_format((float)$student->admission_due, 2)); ?></div>
                 <span class="ifs-kpi-desc">Due Date: <?php echo $student->due_reminder_date ? esc_html(date('M d, Y', strtotime($student->due_reminder_date))) : 'None'; ?></span>
             </div>
         </div>
 
-        <!-- রুটিন ও নোটিশ সেকশন -->
+        <!-- Routine & Notices 2-Column Section -->
         <div class="ifs-dashboard-2col">
             <div class="ifs-card" style="display:flex; flex-direction:column;">
                 <div class="ifs-card-header" style="margin-bottom: 12px;">
@@ -326,7 +343,7 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
                             <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:10px 14px; border-radius:8px; border:1px solid #e2e8f0;">
                                 <strong style="color:#0f172a; font-size:0.88rem;"><?php echo esc_html($day); ?></strong>
                                 <span class="ifs-tag" style="background:#f0fdf4; border-color:#bbf7d0; color:#15803d; font-size:0.75rem;">
-                                    <?php echo esc_html($times['start']); ?> - <?php echo esc_html($times['end']); ?>
+                                    <?php echo esc_html($times['start'] ?? ''); ?> - <?php echo esc_html($times['end'] ?? ''); ?>
                                 </span>
                             </div>
                         <?php endforeach; ?>
@@ -358,7 +375,7 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
             </div>
         </div>
 
-        <!-- উপস্থিতি ও পেমেন্ট হিস্ট্রি টেবিল (মোবাইল হরিজন্টাল স্ক্রল সহ) -->
+        <!-- Attendance & Paid Invoices -->
         <div class="ifs-dashboard-2col">
             <div class="ifs-card" style="display:flex; flex-direction:column;">
                 <div class="ifs-card-header" style="margin-bottom: 12px;">
@@ -396,7 +413,7 @@ function ifs_erp_render_standalone_frontend_portal($standalone = true) {
                                 <tr>
                                     <td><span class="ifs-tag" style="white-space:nowrap;"><?php echo esc_html($fh->receipt_no); ?></span></td>
                                     <td style="white-space:nowrap;"><?php echo esc_html($fh->fee_title); ?></td>
-                                    <td style="color:#10b981; font-weight:700; white-space:nowrap;"><?php echo esc_html($currency_symbol) . ' ' . esc_html(number_format($fh->paid_amount, 2)); ?></td>
+                                    <td style="color:#10b981; font-weight:700; white-space:nowrap;"><?php echo esc_html($currency_symbol) . ' ' . esc_html(number_format((float)$fh->paid_amount, 2)); ?></td>
                                     <td style="text-align:right; color:#64748b; font-size:0.8rem; white-space:nowrap;"><?php echo esc_html(date('M d, Y', strtotime($fh->payment_date))); ?></td>
                                 </tr>
                             <?php endforeach; ?>

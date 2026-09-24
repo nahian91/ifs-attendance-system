@@ -1,11 +1,14 @@
 <?php
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 function ifs_erp_render_schedule_workspace($wpdb, $table_holidays) {
-    $holidays_list = $wpdb->get_results("SELECT * FROM $table_holidays ORDER BY holiday_date DESC");
+    $holidays_list = $wpdb->get_results("SELECT * FROM {$table_holidays} ORDER BY holiday_date DESC");
+    $today_str     = current_time('Y-m-d');
     ?>
     <div style="display: grid; grid-template-columns: 1.1fr 1.9fr; gap: 24px; align-items: start;">
-        <!-- বাম কলাম: ছুটির দিন যোগ করার ফর্ম -->
+        <!-- Left Column: Add Holiday Form -->
         <div class="ifs-card" style="display: flex; flex-direction: column;">
             <div class="ifs-card-header" style="margin-bottom: 16px;">
                 <div>
@@ -14,13 +17,13 @@ function ifs_erp_render_schedule_workspace($wpdb, $table_holidays) {
                 </div>
             </div>
 
-            <form method="POST">
+            <form method="POST" action="<?php echo esc_url(admin_url('admin.php?page=ifs-attendance')); ?>">
                 <?php wp_nonce_field('ifs_holiday_nonce'); ?>
                 <input type="hidden" name="ifs_action" value="add_holiday_entity">
 
                 <div class="ifs-field-group">
                     <label>Holiday Date *</label>
-                    <input type="date" name="holiday_date" class="ifs-input" value="<?php echo esc_attr(date('Y-m-d')); ?>" required>
+                    <input type="date" name="holiday_date" class="ifs-input" value="<?php echo esc_attr($today_str); ?>" required>
                 </div>
 
                 <div class="ifs-field-group">
@@ -41,7 +44,7 @@ function ifs_erp_render_schedule_workspace($wpdb, $table_holidays) {
             </form>
         </div>
 
-        <!-- ডান কলাম: ছুটির দিনের তালিকা (স্লিম কাস্টম স্ক্রলবার ও ফিল্টার সহ) -->
+        <!-- Right Column: Official Holidays Directory -->
         <div class="ifs-card" style="display: flex; flex-direction: column;">
             <div class="ifs-card-header" style="margin-bottom: 16px;">
                 <div>
@@ -68,16 +71,16 @@ function ifs_erp_render_schedule_workspace($wpdb, $table_holidays) {
                         </thead>
                         <tbody>
                             <?php foreach ($holidays_list as $hl): 
-                                $is_past = strtotime($hl->holiday_date) < strtotime(date('Y-m-d'));
-                                $type_class = $hl->holiday_type === 'Official' ? 'background:#fee2e2; border-color:#fecaca; color:#b91c1c;' : 'background:#e0f2fe; border-color:#bae6fd; color:#0369a1;';
+                                $is_past = strtotime($hl->holiday_date) < strtotime($today_str);
+                                $type_class = ($hl->holiday_type === 'Official') ? 'background:#fee2e2; border-color:#fecaca; color:#b91c1c;' : 'background:#e0f2fe; border-color:#bae6fd; color:#0369a1;';
                             ?>
                                 <tr style="transition: background 0.15s ease;">
                                     <td>
                                         <strong style="color: <?php echo $is_past ? '#64748b' : '#0f172a'; ?>; font-size: 0.92rem;">
-                                            <?php echo esc_html(date('M d, Y', strtotime($hl->holiday_date))); ?>
+                                            <?php echo esc_html(wp_date('M d, Y', strtotime($hl->holiday_date))); ?>
                                         </strong><br>
                                         <span style="font-size: 0.75rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace;">
-                                            <?php echo esc_html(date('l', strtotime($hl->holiday_date))); ?>
+                                            <?php echo esc_html(wp_date('l', strtotime($hl->holiday_date))); ?>
                                         </span>
                                     </td>
                                     <td>
@@ -103,19 +106,19 @@ function ifs_erp_render_schedule_workspace($wpdb, $table_holidays) {
 
     <script>
         function filterHolidayTable() {
-            const input = document.getElementById('holidaySearchInput');
-            const filter = input.value.toLowerCase();
-            const table = document.getElementById('holidayDirectoryTable');
+            var input = document.getElementById('holidaySearchInput');
+            var filter = input.value.toLowerCase();
+            var table = document.getElementById('holidayDirectoryTable');
             if (!table) return;
-            const tr = table.getElementsByTagName('tr');
-            for (let i = 1; i < tr.length; i++) {
-                let tdDate = tr[i].getElementsByTagName('td')[0];
-                let tdTitle = tr[i].getElementsByTagName('td')[1];
-                let tdType = tr[i].getElementsByTagName('td')[2];
+            var tr = table.getElementsByTagName('tr');
+            for (var i = 1; i < tr.length; i++) {
+                var tdDate  = tr[i].getElementsByTagName('td')[0];
+                var tdTitle = tr[i].getElementsByTagName('td')[1];
+                var tdType  = tr[i].getElementsByTagName('td')[2];
                 if (tdDate || tdTitle || tdType) {
-                    let txtDate = tdDate ? (tdDate.textContent || tdDate.innerText) : '';
-                    let txtTitle = tdTitle ? (tdTitle.textContent || tdTitle.innerText) : '';
-                    let txtType = tdType ? (tdType.textContent || tdType.innerText) : '';
+                    var txtDate  = tdDate ? (tdDate.textContent || tdDate.innerText) : '';
+                    var txtTitle = tdTitle ? (tdTitle.textContent || tdTitle.innerText) : '';
+                    var txtType  = tdType ? (tdType.textContent || tdType.innerText) : '';
                     if (txtDate.toLowerCase().indexOf(filter) > -1 || txtTitle.toLowerCase().indexOf(filter) > -1 || txtType.toLowerCase().indexOf(filter) > -1) {
                         tr[i].style.display = "";
                     } else {

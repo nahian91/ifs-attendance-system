@@ -9,16 +9,20 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// প্লাগইন অ্যাক্টিভেশন হুকের সাথে স্কিমা ইনস্টলার রেজিস্ট্রেশন
-register_activation_hook(IFS_PLUGIN_FILE, 'ifs_erp_install_database_schema');
+// Activation hook registration
+if (defined('IFS_PLUGIN_FILE')) {
+    register_activation_hook(IFS_PLUGIN_FILE, 'ifs_erp_install_database_schema');
+}
 
+/**
+ * Creates and updates custom database tables using dbDelta.
+ */
 function ifs_erp_install_database_schema() {
     global $wpdb;
     
-    // ডাটাবেস ক্যারেক্টার সেট এবং কোলেশন সংগ্রহ
     $charset_collate = $wpdb->get_charset_collate();
 
-    // ১. শিক্ষার্থী টেবিল (Students Table)
+    // 1. Students Table
     $table_students = $wpdb->prefix . 'ifs_students';
     $sql_students = "CREATE TABLE $table_students (
         id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -46,7 +50,7 @@ function ifs_erp_install_database_schema() {
         KEY due_reminder_date_idx (due_reminder_date)
     ) $charset_collate;";
 
-    // ২. উপস্থিতি টেবিল (Attendance Table)
+    // 2. Attendance Table
     $table_attendance = $wpdb->prefix . 'ifs_attendance';
     $sql_attendance = "CREATE TABLE $table_attendance (
         id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -63,7 +67,7 @@ function ifs_erp_install_database_schema() {
         KEY status_idx (status)
     ) $charset_collate;";
 
-    // ৩. ফি হিসাব টেবিল (Fees Table)
+    // 3. Fees Ledger Table
     $table_fees = $wpdb->prefix . 'ifs_fees';
     $sql_fees = "CREATE TABLE $table_fees (
         id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -83,7 +87,7 @@ function ifs_erp_install_database_schema() {
         KEY payment_date_idx (payment_date)
     ) $charset_collate;";
 
-    // ৪. ব্যাচ ও কোর্স টেবিল (Batches Table)
+    // 4. Batches Table
     $table_batches = $wpdb->prefix . 'ifs_batches';
     $sql_batches = "CREATE TABLE $table_batches (
         id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -97,7 +101,7 @@ function ifs_erp_install_database_schema() {
         KEY teacher_id_idx (teacher_id)
     ) $charset_collate;";
 
-    // ৫. শিক্ষক ও স্টাফ টেবিল (Teachers Table)
+    // 5. Teachers Table
     $table_teachers = $wpdb->prefix . 'ifs_teachers';
     $sql_teachers = "CREATE TABLE $table_teachers (
         id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -113,7 +117,7 @@ function ifs_erp_install_database_schema() {
         KEY phone_idx (phone)
     ) $charset_collate;";
 
-    // ৬. ছুটির দিন টেবিল (Holidays Table)
+    // 6. Holidays Table
     $table_holidays = $wpdb->prefix . 'ifs_holidays';
     $sql_holidays = "CREATE TABLE $table_holidays (
         id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -125,7 +129,7 @@ function ifs_erp_install_database_schema() {
         KEY holiday_type_idx (holiday_type)
     ) $charset_collate;";
 
-    // ৭. নোটিশ বোর্ড টেবিল (Notices Table)
+    // 7. Notice Board Table
     $table_notices = $wpdb->prefix . 'ifs_notices';
     $sql_notices = "CREATE TABLE $table_notices (
         id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -137,7 +141,7 @@ function ifs_erp_install_database_schema() {
         KEY target_batch_idx (target_batch)
     ) $charset_collate;";
 
-    // ৮. মেটা সেটিংস টেবিল (Meta Table)
+    // 8. Meta Settings Table
     $table_meta = $wpdb->prefix . 'ifs_meta';
     $sql_meta = "CREATE TABLE $table_meta (
         id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -149,7 +153,7 @@ function ifs_erp_install_database_schema() {
 
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     
-    // dbDelta এক্সিকিউশন
+    // Execute dbDelta updates
     dbDelta($sql_students);
     dbDelta($sql_attendance);
     dbDelta($sql_fees);
@@ -159,7 +163,7 @@ function ifs_erp_install_database_schema() {
     dbDelta($sql_notices);
     dbDelta($sql_meta);
 
-    // ডিফল্ট প্রতিষ্ঠান যুক্ত করা (যদি ডাটা না থাকে)
+    // Insert initial institutions if none exist
     $has_inst = $wpdb->get_var($wpdb->prepare(
         "SELECT COUNT(*) FROM $table_meta WHERE meta_type = %s",
         'institution'
@@ -171,22 +175,22 @@ function ifs_erp_install_database_schema() {
         $wpdb->insert($table_meta, ['meta_type' => 'institution', 'meta_value' => 'Sylhet Govt College']);
     }
 
-    // গ্লোবাল সিস্টেম ডিফল্ট অপশন
+    // Default global options
     add_option('ifs_currency_symbol', '৳');
     add_option('ifs_portal_name', 'IFS Academic ERP');
     add_option('ifs_receipt_prefix', 'REC-');
     
-    // ডাটাবেস স্কিমা ভার্সন আপডেট
-    update_option('ifs_erp_db_version', defined('IFS_VERSION') ? IFS_VERSION : '16.5.0');
+    // Update DB Version
+    update_option('ifs_erp_db_version', defined('IFS_VERSION') ? IFS_VERSION : '1.0');
 }
 
 /**
- * প্লাগইন অ্যাক্টিভেশনের বাইরে টেবিল মিসিং হলে অটো-রিকভারি চেক
+ * Automatically check and apply schema updates inside admin
  */
-add_action('plugins_loaded', 'ifs_erp_check_database_state');
+add_action('admin_init', 'ifs_erp_check_database_state');
 function ifs_erp_check_database_state() {
     $installed_ver = get_option('ifs_erp_db_version');
-    $current_ver   = defined('IFS_VERSION') ? IFS_VERSION : '16.5.0';
+    $current_ver   = defined('IFS_VERSION') ? IFS_VERSION : '1.0';
 
     if ($installed_ver !== $current_ver) {
         ifs_erp_install_database_schema();

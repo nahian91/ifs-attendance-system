@@ -1,5 +1,7 @@
 <?php
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 add_action('admin_enqueue_scripts', 'ifs_erp_load_media_uploader');
 function ifs_erp_load_media_uploader($hook) {
@@ -29,7 +31,7 @@ function ifs_pro_inject_ultimate_styles() {
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
-        /* যেকোনো ওয়ার্ডপ্রেস থিমে ফুল-উইডথ ব্রেকআউট */
+        /* Full width breakout */
         .ifs-fullscreen-wrapper {
             width: 100vw !important;
             position: relative !important;
@@ -44,7 +46,7 @@ function ifs_pro_inject_ultimate_styles() {
             z-index: 10;
         }
 
-        /* আল্ট্রা স্লিম স্ক্রোলবার */
+        /* Ultra-slim scrollbars */
         html { scroll-behavior: smooth; }
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: #f8fafc; }
@@ -59,7 +61,7 @@ function ifs_pro_inject_ultimate_styles() {
         * { scrollbar-width: thin; scrollbar-color: #cbd5e1 #f8fafc; }
         .ifs-custom-scrollbar { scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent; }
 
-        /* অ্যাডমিনবার হাইড */
+        /* WordPress admin layout adjustments for portal mode */
         #adminmenumain, #adminmenuback, #wpadminbar, #wpfooter { display: none !important; }
         #wpcontent, #wpfooter { margin-left: 0 !important; padding: 0 !important; }
         html.wp-toolbar { padding-top: 0 !important; }
@@ -88,7 +90,7 @@ function ifs_pro_inject_ultimate_styles() {
 
         .ifs-shell { display: flex; min-height: 100vh; background: var(--ifs-bg); }
 
-        /* সাইডবার */
+        /* Sidebar styles */
         .ifs-sidebar {
             width: 260px; background: #ffffff; color: var(--ifs-text-muted); display: flex; flex-direction: column;
             position: fixed; top: 0; bottom: 0; left: 0; z-index: 999;
@@ -120,7 +122,7 @@ function ifs_pro_inject_ultimate_styles() {
         .ifs-sidebar-footer { padding: 16px 20px; border-top: 1.5px solid var(--ifs-border); background: #ffffff; }
         .ifs-sidebar-link { color: #ef4444; text-decoration: none; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
-        /* কনটেন্ট এরিয়া */
+        /* Content Area */
         .ifs-content-wrapper { margin-left: 260px; flex-grow: 1; display: flex; flex-direction: column; min-height: 100vh; background: #f8fafc; }
         .ifs-main-topbar {
             background: #ffffff; border-bottom: 1.5px solid var(--ifs-border);
@@ -131,7 +133,7 @@ function ifs_pro_inject_ultimate_styles() {
 
         .ifs-body { padding: 30px 40px; max-width: 1440px; width: 100%; box-sizing: border-box; margin: 0 auto; }
 
-        /* সাবট্যাব ও কার্ড */
+        /* Subtabs & Cards */
         .ifs-subtabs-nav { display: flex; gap: 6px; background: #e2e8f0; padding: 4px; border-radius: 10px; width: fit-content; margin-bottom: 22px; }
         .ifs-subtab-btn { padding: 7px 16px; font-size: 0.82rem; font-weight: 700; color: #475569; text-decoration: none; border-radius: 8px; transition: all 0.2s; }
         .ifs-subtab-btn:hover { color: #0284c7; }
@@ -141,7 +143,7 @@ function ifs_pro_inject_ultimate_styles() {
         .ifs-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .ifs-card-title { font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0; }
 
-        /* KPI কার্ড গ্রিড */
+        /* KPI Cards Grid */
         .ifs-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .ifs-kpi-tile { background: #ffffff; border: 1.5px solid var(--ifs-border); border-radius: 12px; padding: 20px; position: relative; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.015); }
         .ifs-kpi-tile::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; }
@@ -150,7 +152,7 @@ function ifs_pro_inject_ultimate_styles() {
         .ifs-kpi-number { font-size: 1.95rem; font-weight: 800; color: #0f172a; line-height: 1.1; margin: 6px 0 2px; font-family: 'JetBrains Mono', monospace; }
         .ifs-kpi-desc { font-size: 0.78rem; color: #94a3b8; font-weight: 600; }
 
-        /* ড্যাশবোর্ড ও হাজিরা কাউন্টার পিলস */
+        /* Counters & Pills */
         .ifs-pills-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 22px; }
         .ifs-status-counter { padding: 16px 20px; border-radius: 12px; text-align: center; border: 1.5px solid transparent; transition: all 0.2s ease; }
         .sc-p { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
@@ -159,13 +161,13 @@ function ifs_pro_inject_ultimate_styles() {
         .sc-count { font-size: 2rem; font-weight: 800; line-height: 1; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
         .sc-lbl { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
 
-        /* ফিল্টার টুলবার */
+        /* Toolbar */
         .ifs-toolbar {
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
             background: #f8fafc; padding: 14px 18px; border-radius: 12px; border: 1.5px solid var(--ifs-border); margin-bottom: 20px;
         }
 
-        /* হাজিরা সিলেকশন বাটন গ্রুপ */
+        /* Attendance Status Selection */
         .ifs-status-pill-group { display: inline-flex; background: #f1f5f9; padding: 4px; border-radius: 10px; gap: 4px; border: 1.5px solid var(--ifs-border); }
         .ifs-status-pill-group label { padding: 6px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 7px; cursor: pointer; margin: 0; user-select: none; display: flex; align-items: center; justify-content: center; }
         .ifs-status-pill-group input { display: none; }
@@ -174,105 +176,65 @@ function ifs_pro_inject_ultimate_styles() {
         .ifs-status-pill-group input[value="Absent"]:checked + span { background: #ef4444; color: #fff; border-radius: 6px; padding: 4px 10px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35); }
         .ifs-status-pill-group input[value="Late"]:checked + span { background: #f59e0b; color: #fff; border-radius: 6px; padding: 4px 10px; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35); }
 
-        /* রিপোর্ট ও অ্যানালিটিক্স প্রগ্রেস বার */
+        /* Reports Progress Bar */
         .ifs-progress { background: #e2e8f0; border-radius: 10px; overflow: hidden; height: 8px; width: 100px; display: inline-block; vertical-align: middle; margin-right: 8px; }
         .ifs-progress-bar { height: 100%; border-radius: 10px; transition: width 0.3s ease; }
 
-        /* ========================================================
-           প্রফেশনাল ফর্ম ইনপুট ফিল্ড আর্কিটেকচার (PRO FORM INPUTS)
-           ======================================================== */
-        .ifs-field-group {
-            margin-bottom: 18px;
-            position: relative;
-        }
+        /* Form Inputs */
+        .ifs-field-group { margin-bottom: 18px; position: relative; }
         .ifs-field-group label {
-            display: block;
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: var(--ifs-text-sub);
-            margin-bottom: 7px;
+            display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.04em; color: var(--ifs-text-sub); margin-bottom: 7px;
         }
 
         .ifs-input, 
         .ifs-select, 
         .ifs-textarea {
-            width: 100%;
-            height: 42px;
-            padding: 9px 14px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            line-height: 1.5;
-            color: var(--ifs-text-main);
-            background-color: #ffffff;
-            border: 1.5px solid var(--ifs-border);
-            border-radius: 9px;
-            outline: none;
-            box-sizing: border-box;
-            font-family: inherit;
+            width: 100%; height: 42px; padding: 9px 14px; font-size: 0.9rem; font-weight: 500;
+            line-height: 1.5; color: var(--ifs-text-main); background-color: #ffffff;
+            border: 1.5px solid var(--ifs-border); border-radius: 9px; outline: none;
+            box-sizing: border-box; font-family: inherit;
             box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
             transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
         }
 
-        .ifs-textarea {
-            height: auto;
-            min-height: 95px;
-            resize: vertical;
-        }
+        .ifs-textarea { height: auto; min-height: 95px; resize: vertical; }
 
         .ifs-input:hover, 
         .ifs-select:hover, 
-        .ifs-textarea:hover {
-            border-color: var(--ifs-border-hover);
-        }
+        .ifs-textarea:hover { border-color: var(--ifs-border-hover); }
 
         .ifs-input:focus, 
         .ifs-select:focus, 
         .ifs-textarea:focus {
-            border-color: var(--ifs-border-focus);
-            background-color: #ffffff;
+            border-color: var(--ifs-border-focus); background-color: #ffffff;
             box-shadow: 0 0 0 3.5px var(--ifs-focus-ring), 0 1px 2px rgba(15, 23, 42, 0.04);
         }
 
         .ifs-input::placeholder,
-        .ifs-textarea::placeholder {
-            color: #94a3b8;
-            font-weight: 400;
-            font-size: 0.88rem;
-        }
+        .ifs-textarea::placeholder { color: #94a3b8; font-weight: 400; font-size: 0.88rem; }
 
         .ifs-select {
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            padding-right: 36px;
-            cursor: pointer;
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            padding-right: 36px; cursor: pointer;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 14px;
+            background-repeat: no-repeat; background-position: right 12px center; background-size: 14px;
         }
 
         input[type="date"].ifs-input,
         input[type="month"].ifs-input {
-            cursor: pointer;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #1e293b;
-            font-weight: 600;
+            cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #1e293b; font-weight: 600;
         }
 
         .ifs-input:disabled, 
         .ifs-select:disabled, 
         .ifs-input[readonly] {
-            background-color: #f1f5f9 !important;
-            border-color: #e2e8f0 !important;
-            color: #64748b !important;
-            cursor: not-allowed;
-            box-shadow: none !important;
+            background-color: #f1f5f9 !important; border-color: #e2e8f0 !important;
+            color: #64748b !important; cursor: not-allowed; box-shadow: none !important;
         }
 
-        /* বাটন আর্কিটেকচার */
+        /* Buttons */
         .ifs-btn {
             background: var(--ifs-accent-grad); color: #fff; border: none; height: 42px; padding: 0 22px; font-size: 0.88rem; font-weight: 700;
             border-radius: 9px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
@@ -290,7 +252,7 @@ function ifs_pro_inject_ultimate_styles() {
         }
         .ifs-btn-wa:hover { background: #1eb956; color: #ffffff; }
 
-        /* টেবিল, ব্যাজ এবং ট্যাগ */
+        /* Tables & Badges */
         .ifs-table { width: 100%; border-collapse: separate; border-spacing: 0; }
         .ifs-table th { background: #f8fafc; color: #475569; font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 14px; border-bottom: 1.5px solid var(--ifs-border); text-align: left; }
         .ifs-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 0.88rem; color: #1e293b; }
@@ -302,7 +264,7 @@ function ifs_pro_inject_ultimate_styles() {
         .badge-absent { background: #fee2e2; color: #b91c1c; }
         .badge-late { background: #fef3c7; color: #b45309; }
 
-        /* অ্যালার্ট ও মোডাল */
+        /* Alerts & Modals */
         .ifs-alert { padding: 12px 16px; border-radius: 10px; font-weight: 700; margin-bottom: 20px; font-size: 0.88rem; }
         .ifs-alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
         .ifs-alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
@@ -313,7 +275,7 @@ function ifs_pro_inject_ultimate_styles() {
         .ifs-modal-close { position: absolute; right: 20px; top: 20px; font-size: 1.4rem; color: #94a3b8; cursor: pointer; border: none; background: none; line-height: 1; }
         .ifs-modal-close:hover { color: #ef4444; }
 
-        /* মিডিয়া আপলোড প্রিভিউ */
+        /* Media Box */
         .ifs-media-box { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
         .ifs-media-preview { width: 68px; height: 68px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; background: #f1f5f9; display: block; }
     </style>

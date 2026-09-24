@@ -1,9 +1,14 @@
 <?php
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 function ifs_erp_render_settings_workspace($wpdb, $table_meta, $sub_tab, $portal_name, $currency_symbol) {
     $receipt_prefix = get_option('ifs_receipt_prefix', 'REC-');
-    $all_insts      = $wpdb->get_results("SELECT * FROM $table_meta WHERE meta_type = 'institution' ORDER BY id DESC");
+    $all_insts      = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM {$table_meta} WHERE meta_type = %s ORDER BY id DESC",
+        'institution'
+    ));
     ?>
     <nav class="ifs-subtabs-nav">
         <a href="<?php echo esc_url(admin_url('admin.php?page=ifs-attendance&page_view=settings&sub_tab=institutions')); ?>" class="ifs-subtab-btn <?php echo ($sub_tab === 'institutions') ? 'active' : ''; ?>">🏛️ Institutions</a>
@@ -19,7 +24,7 @@ function ifs_erp_render_settings_workspace($wpdb, $table_meta, $sub_tab, $portal
                 </div>
             </div>
 
-            <form method="POST" style="margin-bottom: 20px;">
+            <form method="POST" action="<?php echo esc_url(admin_url('admin.php?page=ifs-attendance')); ?>" style="margin-bottom: 20px;">
                 <?php wp_nonce_field('ifs_setting_nonce'); ?>
                 <input type="hidden" name="ifs_action" value="add_setting_meta">
                 <input type="hidden" name="meta_type" value="institution">
@@ -73,7 +78,7 @@ function ifs_erp_render_settings_workspace($wpdb, $table_meta, $sub_tab, $portal
                 </div>
             </div>
 
-            <form method="POST">
+            <form method="POST" action="<?php echo esc_url(admin_url('admin.php?page=ifs-attendance')); ?>">
                 <?php wp_nonce_field('ifs_gen_setting_nonce'); ?>
                 <input type="hidden" name="ifs_action" value="save_general_settings">
 

@@ -1,11 +1,13 @@
 <?php
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 function ifs_erp_render_notices_workspace($wpdb, $table_notices, $available_batches) {
-    $all_notices = $wpdb->get_results("SELECT * FROM $table_notices ORDER BY id DESC");
+    $all_notices = $wpdb->get_results("SELECT * FROM {$table_notices} ORDER BY id DESC");
     ?>
     <div style="display: grid; grid-template-columns: 1.15fr 1.85fr; gap: 24px; align-items: start;">
-        <!-- বাম কলাম: নোটিশ পাবলিশ ফর্ম -->
+        <!-- Left Column: Notice Creation Form -->
         <div class="ifs-card" style="display: flex; flex-direction: column;">
             <div class="ifs-card-header" style="margin-bottom: 16px;">
                 <div>
@@ -14,7 +16,7 @@ function ifs_erp_render_notices_workspace($wpdb, $table_notices, $available_batc
                 </div>
             </div>
 
-            <form method="POST">
+            <form method="POST" action="<?php echo esc_url(admin_url('admin.php?page=ifs-attendance')); ?>">
                 <?php wp_nonce_field('ifs_notice_nonce'); ?>
                 <input type="hidden" name="ifs_action" value="add_notice_entity">
 
@@ -42,7 +44,7 @@ function ifs_erp_render_notices_workspace($wpdb, $table_notices, $available_batc
             </form>
         </div>
 
-        <!-- ডান কলাম: নোটিশ ফিড (স্লিম কাস্টম স্ক্রলবার ও ফিল্টার সহ) -->
+        <!-- Right Column: Notice Feed -->
         <div class="ifs-card" style="display: flex; flex-direction: column;">
             <div class="ifs-card-header" style="margin-bottom: 16px;">
                 <div>
@@ -59,7 +61,7 @@ function ifs_erp_render_notices_workspace($wpdb, $table_notices, $available_batc
             <?php else: ?>
                 <div id="noticeFeedContainer" class="ifs-custom-scrollbar" style="max-height: 520px; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 14px;">
                     <?php foreach ($all_notices as $not): 
-                        $is_all = $not->target_batch === 'All';
+                        $is_all = ($not->target_batch === 'All');
                         $batch_badge_style = $is_all ? 'background:#e0f2fe; border-color:#bae6fd; color:#0369a1;' : 'background:#fef3c7; border-color:#fde68a; color:#b45309;';
                     ?>
                         <div class="notice-feed-card" style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 14px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.transform='none';this.style.boxShadow='none';">
@@ -73,7 +75,7 @@ function ifs_erp_render_notices_workspace($wpdb, $table_notices, $available_batc
                                             <?php echo esc_html($not->target_batch); ?>
                                         </span>
                                         <span style="font-size: 0.75rem; color: #64748b; font-family: 'JetBrains Mono', monospace;">
-                                            📅 <?php echo esc_html(date('M d, Y · h:i A', strtotime($not->created_at))); ?>
+                                            📅 <?php echo esc_html(wp_date('M d, Y · h:i A', strtotime($not->created_at))); ?>
                                         </span>
                                     </div>
                                 </div>
@@ -94,14 +96,18 @@ function ifs_erp_render_notices_workspace($wpdb, $table_notices, $available_batc
 
     <script>
         function filterNoticeFeed() {
-            const input = document.getElementById('noticeSearchInput');
-            const filter = input.value.toLowerCase();
-            const cards = document.querySelectorAll('.notice-feed-card');
+            var input = document.getElementById('noticeSearchInput');
+            var filter = input.value.toLowerCase();
+            var cards = document.querySelectorAll('.notice-feed-card');
             
-            cards.forEach(card => {
-                const title = card.querySelector('.notice-item-title')?.innerText.toLowerCase() || '';
-                const batch = card.querySelector('.notice-item-batch')?.innerText.toLowerCase() || '';
-                const desc = card.querySelector('.notice-item-desc')?.innerText.toLowerCase() || '';
+            cards.forEach(function(card) {
+                var titleEl = card.querySelector('.notice-item-title');
+                var batchEl = card.querySelector('.notice-item-batch');
+                var descEl  = card.querySelector('.notice-item-desc');
+
+                var title = titleEl ? titleEl.innerText.toLowerCase() : '';
+                var batch = batchEl ? batchEl.innerText.toLowerCase() : '';
+                var desc  = descEl ? descEl.innerText.toLowerCase() : '';
 
                 if (title.indexOf(filter) > -1 || batch.indexOf(filter) > -1 || desc.indexOf(filter) > -1) {
                     card.style.display = "";
